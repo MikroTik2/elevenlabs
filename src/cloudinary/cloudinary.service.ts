@@ -14,6 +14,7 @@ export class CloudinaryService {
 
      private readonly options_audio = {
           folder: 'audio',
+          format: 'mp3',
           resource_type: "video",
      };
 

@@ -31,8 +31,14 @@ export class GreeterUpdate {
           await ctx.scene.enter('VOICE_SCENE_ID');
      };
 
-     @Command('wizard')
-     async onWizardCommand(@Ctx() ctx: IContext): Promise<void> {
-          await ctx.scene.enter('WIZARD_SCENE_ID');
+     @Action('/video')
+     @Command('video')
+     async onVideoCommand(@Ctx() ctx: IContext): Promise<void> {
+          await ctx.scene.enter('VIDEO_SCENE_ID');
      };
+     
+     // @Command('wizard')
+     // async onWizardCommand(@Ctx() ctx: IContext): Promise<void> {
+     //      await ctx.scene.enter('WIZARD_SCENE_ID');
+     // };
 };

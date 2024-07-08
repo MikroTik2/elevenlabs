@@ -1,4 +1,4 @@
-import { Scene, SceneEnter, On, Action, Ctx, Message, Help, Start, Update } from 'nestjs-telegraf';
+import { Scene, SceneEnter, On, Action, Ctx, Message } from 'nestjs-telegraf';
 import { ApiService } from '@/api/api.service';
 import { IContext } from '@/interfaces/context.interface';
 
@@ -56,11 +56,11 @@ export class GetAllVoices {
      };
 
      @Action(/text_speech_(.+)/)
-     async onTextSpeech(@Ctx() ctx: IContext, @Message('text') message: any) {
+     async onTextSpeech(@Ctx() ctx: IContext) {
           const voiceId = ctx?.['match'];
           ctx.session.__scenes.state = {'voiceId': voiceId[1]}
 
-          await ctx.replyWithHTML('Отправьте текст, который хотите озвучить');
+          await ctx.replyWithHTML('Отправьте <b>текст</b> или <b>аудио</b>, которое хотите озвучить');
      };
 
      @On('text')
@@ -69,8 +69,8 @@ export class GetAllVoices {
           const voiceId = ctx.session.__scenes.state?.['voiceId'];
 
           if (message !== '/start' || '/help' || '/voices') {
-               await ctx.scene.leave();
 
+               await ctx.scene.leave();
                await ctx.replyWithHTML(`
 <b>Вы можете использовать следующие команды:</b>
 
@@ -83,8 +83,26 @@ export class GetAllVoices {
           };
 
           await ctx.replyWithHTML('<code>Сообщение принял. Жду ответа от сервера!</code>');
-
           const api = await this.apiService.getTextSpeech(message, voiceId);
+          
+          await ctx.sendAudio({ url: api.url, filename: `${voiceId}.mp3` }, {
+               reply_markup: {
+                    inline_keyboard: [
+                         [{ text: 'Назад к выбору голоса', callback_data: '/voices' }],
+                         [{ text: 'Выйти на главную', callback_data: `leave` }],
+                    ],
+               },
+          });
+     };
+
+     @On('voice')
+     async onVoice(@Ctx() ctx: IContext, @Message('voice') voice: any) {
+
+          const voiceId = ctx.session.__scenes.state?.['voiceId'];
+          const file = await ctx.telegram.getFileLink(voice.file_id);
+          
+          await ctx.replyWithHTML('<code>Сообщение принял. Жду ответа от сервера!</code>');
+          const api = await this.apiService.getSpeechToSpeech(file.href, voiceId);
           
           await ctx.sendAudio({ url: api.url, filename: `${voiceId}.mp3` }, {
                reply_markup: {

@@ -13,9 +13,10 @@ import { GreeterUpdate } from '@/greeter/greeter.update';
         {
             provide: 'greeterBot',
             useFactory: (configService: ConfigService) => {
-                const bot = new Telegraf('6772463405:AAGlbQ8ioOXC70kmg8JaVgbkDBnKVzroIr0');
+                const bot = new Telegraf(configService.get<string>('TELEGRAM_BOT_TOKEN'));
                 return bot;
             },
+            
             inject: [ConfigService],
         },
 
