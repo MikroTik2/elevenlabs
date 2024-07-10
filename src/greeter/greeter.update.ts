@@ -13,7 +13,7 @@ export class GreeterUpdate {
      @Start()
      async onStart(@Ctx() ctx: IContext) {
           await this.echoService.sendMessage({
-               text:  `👋 Привет - <b>${ctx.from.first_name}</b>! Я бот, который может конвертировать текст в речь с использованием продвинутой AI модели. Введи текст, и я озвучу его для тебя.`,
+               text: phrases.home(ctx.from.first_name),
                ...this.echoService.createSimpleInlineKeyboard([
                     [{ text: 'Получить все голоса', callback_data: '/voices' }],
                     [{ text: 'Убрать шус с видео', callback_data: '/video' }],
