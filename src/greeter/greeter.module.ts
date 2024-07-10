@@ -2,11 +2,14 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TelegrafModule } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
+import { EchoModule } from '@/echo/echo.module';
 import { GreeterUpdate } from '@/greeter/greeter.update';
 
 @Module({
     imports: [
         ConfigModule.forRoot(),
+
+        EchoModule,
         TelegrafModule,
     ],
     providers: [

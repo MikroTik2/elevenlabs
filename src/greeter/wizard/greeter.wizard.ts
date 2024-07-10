@@ -1,4 +1,6 @@
 import { Ctx, Message, On, Wizard, WizardStep } from 'nestjs-telegraf';
+import { ApiService } from '@/api/api.service';
+import { IContext } from '@/interfaces/context.interface';
 import { WizardContext } from 'telegraf/typings/scenes';
 
 @Wizard('WIZARD_SCENE_ID')
