@@ -1,37 +1,101 @@
 # Project Setup and Deployment Guide
 
-# This guide provides step-by-step instructions for setting up and deploying the project using Docker.
+This guide provides step-by-step instructions for setting up and deploying the project using Docker.
 
-# Prerequisites
+## Prerequisites
 
-# Before you begin, ensure you have the following installed on your machine:
-# - Docker: https://docs.docker.com/get-docker/
-# - Git: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
+Before you begin, ensure you have the following installed on your machine:
 
-# Cloning the Repository
+- [Docker](https://docs.docker.com/get-docker/)
+- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-# 1. Open your terminal.
-# 2. Clone the repository by running the following command:
-# git clone <repository-url>
-# cd <repository-name>
+## Cloning the Repository
 
-# Project Configuration
+1. Open your terminal.
+2. Clone the repository by running the following command:
 
-# 1. Create a .env file in the root directory of the project with the following content:
-# PORT=3000
-# TELEGRAM_BOT_TOKEN=6772463405:AAGlbQ8ioOXC70kmg8JaVgbkDBnKVzroIr0
-# ELEVENLABS_API_KEY=sk_3736e15242349f48799a2a9a8d10346e0cfaa6d9bdb09191
-# CLOUDINARY_API_NAME=dn7gjjo2z
-# CLOUDINARY_API_KEY=673516527583583
-# CLOUDINARY_API_SECRET=2Jw7QQNWBfmoMA-Gm20qo30mLsI
-# NODE_ENV=production
+    ```bash
+    git clone <repository-url>
+    ```
 
-# Docker Setup and Deployment
+3. Navigate to the project directory:
 
-# Build the Docker image by running the following command in the terminal:
-# docker build -t my-node-app .
+    ```bash
+    cd <repository-name>
+    ```
 
-# Run the Docker container with the following command:
-# docker run -d -p 3000:3000 --env-file .env my-node-app
+## Project Configuration
 
-# This will start the application in a Docker container and expose it on port 3000.
+1. Create a `.env` file in the root directory of the project with the following content:
+
+    ```env
+    PORT=3000
+    TELEGRAM_BOT_TOKEN=<token>
+    ELEVENLABS_API_KEY=<api_key>
+    CLOUDINARY_API_NAME=<key>
+    CLOUDINARY_API_KEY=<key>
+    CLOUDINARY_API_SECRET=<key>
+    NODE_ENV=production
+    ```
+
+Replace `<repository-url>` and `<repository-name>` with the appropriate values for your repository.
+
+## Docker Setup and Deployment
+
+1. Build the Docker image by running the following command in the terminal:
+
+    ```bash
+    docker build -t my-node-app .
+    ```
+
+2. Run the Docker container with the following command:
+
+    ```bash
+    docker run -d -p 3000:3000 --env-file .env my-node-app
+    ```
+
+This will start the application in a Docker container and expose it on port 3000.
+
+## Dockerfile
+
+The `Dockerfile` used for building the image is as follows:
+
+    ```Dockerfile
+    # Use the official Node.js 18 image as the base image
+    FROM node:18
+
+    # Set the working directory inside the container
+    WORKDIR /usr/src/app
+
+    # Copy package.json and package-lock.json to the container
+    COPY package*.json ./
+
+    # Install project dependencies
+    RUN npm install
+
+    # Copy the rest of the application code to the container
+    COPY . .
+
+    # Copy the .env file to the container
+    COPY .env ./
+
+    # Build the application
+    RUN npm run build
+
+    # Expose port 3000 to the host
+    EXPOSE 3000
+
+    # Command to run the application
+    CMD [ "npm", "run", "start:prod" ]
+    ```
+
+## Accessing the Application
+
+Once the Docker container is running, you can access the application in your web browser at `http://localhost:3000`.
+
+## Troubleshooting
+
+If you encounter any issues, check the container logs with the following command:
+
+```bash
+docker logs <container-id>
