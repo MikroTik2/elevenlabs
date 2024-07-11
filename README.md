@@ -1,73 +1,37 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Project Setup and Deployment Guide
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# This guide provides step-by-step instructions for setting up and deploying the project using Docker.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+# Prerequisites
 
-## Description
+# Before you begin, ensure you have the following installed on your machine:
+# - Docker: https://docs.docker.com/get-docker/
+# - Git: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+# Cloning the Repository
 
-## Installation
+# 1. Open your terminal.
+# 2. Clone the repository by running the following command:
+# git clone <repository-url>
+# cd <repository-name>
 
-```bash
-$ npm install
-```
+# Project Configuration
 
-## Running the app
+# 1. Create a .env file in the root directory of the project with the following content:
+# PORT=3000
+# TELEGRAM_BOT_TOKEN=6772463405:AAGlbQ8ioOXC70kmg8JaVgbkDBnKVzroIr0
+# ELEVENLABS_API_KEY=sk_3736e15242349f48799a2a9a8d10346e0cfaa6d9bdb09191
+# CLOUDINARY_API_NAME=dn7gjjo2z
+# CLOUDINARY_API_KEY=673516527583583
+# CLOUDINARY_API_SECRET=2Jw7QQNWBfmoMA-Gm20qo30mLsI
+# NODE_ENV=production
 
-```bash
-# development
-$ npm run start
+# Docker Setup and Deployment
 
-# watch mode
-$ npm run start:dev
+# Build the Docker image by running the following command in the terminal:
+# docker build -t my-node-app .
 
-# production mode
-$ npm run start:prod
-```
+# Run the Docker container with the following command:
+# docker run -d -p 3000:3000 --env-file .env my-node-app
 
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+# This will start the application in a Docker container and expose it on port 3000.

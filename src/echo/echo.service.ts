@@ -48,7 +48,7 @@ export class EchoService {
      };
 
      async replyAlert(ctx: IContext, options: IReplyAlertOptions) {
-          return await ctx.answerCbQuery(options.text, options.args);
+          return await ctx.answerCbQuery(options.text);
      };
 
      createTypedInlineKeyboard(buttons: Buttons, makeOptions?: Partial<MakeOptions>) {

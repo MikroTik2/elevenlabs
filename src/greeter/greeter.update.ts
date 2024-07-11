@@ -2,6 +2,7 @@ import { Command, Ctx, Help, Start, Update, Action } from 'nestjs-telegraf';
 import { EchoService } from '@/echo/echo.service';
 import { IContext } from '@/interfaces/context.interface';
 import { phrases } from 'libs/locales/phrases';
+import { buttons } from 'libs/locales/buttons';
 
 @Update()
 export class GreeterUpdate {
@@ -15,8 +16,7 @@ export class GreeterUpdate {
           await this.echoService.sendMessage({
                text: phrases.home(ctx.from.first_name),
                ...this.echoService.createSimpleInlineKeyboard([
-                    [{ text: 'Получить все голоса', callback_data: '/voices' }],
-                    [{ text: 'Убрать шус с видео', callback_data: '/video' }],
+                    [{ text: buttons.voice, callback_data: '/voices' }],
                ]),
           }, ctx);
      };
@@ -37,7 +37,6 @@ export class GreeterUpdate {
      async onVideoCommand(@Ctx() ctx: IContext): Promise<void> {
           await ctx.scene.enter('VIDEO_SCENE_ID');
      };
-
      
      @Command('wizard')
      async onWizardCommand(@Ctx() ctx: IContext): Promise<void> {

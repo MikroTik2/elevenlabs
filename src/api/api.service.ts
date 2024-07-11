@@ -140,7 +140,7 @@ export class ApiService {
                catchError(error => {
                     throw new Error(`Failed to get voices from ElevenLabs: ${error.message}`);
                }),
-          ).toPromise();;
+          ).toPromise();
 
           return response;
      };
@@ -163,13 +163,13 @@ export class ApiService {
       * console.log(convertedAudioUrl);
       * ```
      */
-     async getSpeechToSpeech(file: string, voiceId: string): Promise<any> {
+     async getSpeechToSpeechStream(file: string, voiceId: string): Promise<any> {
           const audioBuffer = await firstValueFrom(
                this.httpService.get(file, { responseType: 'arraybuffer' }),
           );
       
           const headers = {
-               Accept: 'application/json',
+               "Content-Type": 'application/json',
                'xi-api-key': this.configService.get<string>('ELEVENLABS_API_KEY'),
           };
       

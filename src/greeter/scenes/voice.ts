@@ -94,22 +94,25 @@ export class GetAllVoices {
           const file = await ctx.telegram.getFileLink(voice.file_id);
           
           await this.echoService.sendMessage({ text: phrases.load }, ctx);
-          const api = await this.apiService.getSpeechToSpeech(file.href, voiceId);
+          const api = await this.apiService.getSpeechToSpeechStream(file.href, voiceId);
           
           await this.echoService.replyAudio({
                audio: api.secure_url,
                filename: `${voiceId}.mp3`,
                ...this.echoService.createTypedInlineKeyboard(
                     [{ text: buttons.leave, callback_data: 'leave' }], { columns: 1 },
-               ),
+                    ),
 
           }, ctx);
+
      };
 
      @Action('leave')
      async onLeaveCommand(@Ctx() ctx: IContext) {
-          await ctx.scene.leave();
 
+          await this.echoService.replyAlert(ctx, { text: 'Вы вернулись в главное меню' });
+
+          await ctx.scene.leave();
           await this.echoService.sendMessage({ text: phrases.leave }, ctx);
      };
 };
