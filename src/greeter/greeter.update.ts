@@ -1,45 +1,34 @@
 import { Command, Ctx, Help, Start, Update, Action } from 'nestjs-telegraf';
-import { EchoService } from '@/echo/echo.service';
+import { UseFilters } from '@nestjs/common';
+
+import { TelegrafExceptionFilter } from '@/common/filters/telegraf-exception.filter';
 import { IContext } from '@/interfaces/context.interface';
-import { phrases } from 'libs/locales/phrases';
-import { buttons } from 'libs/locales/buttons';
 
 @Update()
+@UseFilters(TelegrafExceptionFilter)
 export class GreeterUpdate {
 
-     constructor(
-          private readonly echoService: EchoService,
-     ) {};
-
      @Start()
+     @Action('/start')
      async onStart(@Ctx() ctx: IContext) {
-          await this.echoService.sendMessage({
-               text: phrases.home(ctx.from.first_name),
-               ...this.echoService.createSimpleInlineKeyboard([
-                    [{ text: buttons.voice, callback_data: '/voices' }],
-               ]),
-          }, ctx);
+          await ctx.scene.enter('HOME_SCENE_ID');
      };
 
      @Help()
+     @Action('/help')
      async onHelp(@Ctx() ctx: IContext) {
-          await ctx.replyWithHTML(phrases.help);
+          await ctx.scene.enter('HELP_SCENE_ID');
      };
 
-     @Action('/voices')
      @Command('voices')
-     async onSceneCommand(@Ctx() ctx: IContext): Promise<void> {
+     @Action('/voices')
+     async onSceneVoice(@Ctx() ctx: IContext): Promise<void> {
           await ctx.scene.enter('VOICE_SCENE_ID');
      };
 
-     @Action('/video')
      @Command('video')
-     async onVideoCommand(@Ctx() ctx: IContext): Promise<void> {
+     @Action('/video')
+     async onSceneVideo(@Ctx() ctx: IContext): Promise<void> {
           await ctx.scene.enter('VIDEO_SCENE_ID');
-     };
-     
-     @Command('wizard')
-     async onWizardCommand(@Ctx() ctx: IContext): Promise<void> {
-          await ctx.scene.enter('WIZARD_SCENE_ID');
      };
 };

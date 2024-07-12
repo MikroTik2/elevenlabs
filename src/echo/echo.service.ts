@@ -1,28 +1,32 @@
+import { Buttons, CallbackButton, Key, Keyboard, MakeOptions } from 'telegram-keyboard';
+import { Message } from 'telegraf/typings/core/types/typegram';
+import { Injectable } from '@nestjs/common';
+import { Input } from 'telegraf';
+
 import { IReplyOrEditWithPhotoOptions } from '@/interfaces/replies/reply-or-edit-with-photo.options';
 import { IReplyOrEditWithAudioOptions } from '@/interfaces/replies/reply-or-edit-with-audio.options';
-import { Buttons, CallbackButton, Key, Keyboard, MakeOptions } from 'telegram-keyboard';
+import { IReplyOrEditWithVideoOptions } from '@/interfaces/replies/reply-or-edit-with-video.options';
 import { IButton } from '@/interfaces/button.interface';
 import { IReplyAlertOptions } from '@/interfaces/replies/reply-alert';
 import { IReplyOrEditOptions } from '@/interfaces/replies/reply-or-edit.options';
 import { IContext } from '@/interfaces/context.interface';
-import { Message } from 'telegraf/typings/core/types/typegram';
-import { Injectable } from '@nestjs/common';
-import { Input } from 'telegraf';
 
 @Injectable()
 export class EchoService {
 
      constructor() {};
 
-     async sendMessage(options: IReplyOrEditOptions, ctx: IContext,) {
-
-          const { reply_markup, text } = options;
-
-          return await ctx.sendMessage(text, { 
-               parse_mode: 'HTML',
-               reply_markup,
-               ...reply_markup,
-          }) as Message.TextMessage;
+     async replyOrEdit(options: IReplyOrEditOptions, ctx: IContext) {
+          const { reply_markup } = options;
+  
+          try {
+              return (await ctx.editMessageText(options.text, {
+                  reply_markup,
+                  parse_mode: 'HTML',
+              })) as Message.TextMessage;
+          } catch (e) {
+              return (await ctx.sendMessage(options.text, { reply_markup, parse_mode: 'HTML' })) as Message.TextMessage;
+          };
      };
 
      async replyAudio(options: IReplyOrEditWithAudioOptions, ctx: IContext) {
@@ -45,6 +49,17 @@ export class EchoService {
                reply_markup,
                ...reply_markup,
           }) as Message.PhotoMessage;
+     };
+
+     async replyVideo(options: IReplyOrEditWithVideoOptions, ctx: IContext) {
+          const { reply_markup } = options;
+
+          return await ctx.sendVideo({ url: options.video }, {
+               caption: options.text,
+               parse_mode: 'HTML',
+               ...reply_markup,
+               reply_markup,
+          }) as Message.VideoMessage;
      };
 
      async replyAlert(ctx: IContext, options: IReplyAlertOptions) {

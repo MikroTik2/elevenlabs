@@ -1,13 +1,10 @@
-import { catchError, map } from 'rxjs';
-import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { CloudinaryService } from '@/cloudinary/cloudinary.service';
-import * as fs from 'fs';
-import * as stream from 'stream';
-import { promisify } from 'util';
 import * as FormData from 'form-data';
+
+import { catchError, firstValueFrom, map } from 'rxjs';
+import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 
 @Injectable()
 export class ApiService {
@@ -17,14 +14,7 @@ export class ApiService {
           private readonly httpService: HttpService,
      ) {};
 
-     private async streamToBuffer(stream: stream.Readable): Promise<Buffer> {
-          const chunks: Buffer[] = [];
-          return new Promise((resolve, reject) => {
-               stream.on('data', (chunk) => chunks.push(chunk));
-               stream.on('end', () => resolve(Buffer.concat(chunks)));
-               stream.on('error', reject);
-          });
-     };
+     private api_key = this.configService.get<string>('ELEVENLABS_API_KEY');
 
      // ---------------- Text to Speech ----------------
 
@@ -50,7 +40,7 @@ export class ApiService {
                url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
                headers: {
                     "Content-Type": "application/json",
-                    "xi-api-key": this.configService.get<string>('ELEVENLABS_API_KEY'),
+                    "xi-api-key": this.api_key,
                },
 
                data: {
@@ -99,7 +89,7 @@ export class ApiService {
                method: 'GET',
                url: `https://api.elevenlabs.io/v1/voices/${voiceId}`,
                headers: {
-                    'xi-api-key': this.configService.get<string>('ELEVENLABS_API_KEY'),
+                    'xi-api-key': this.api_key,
                },
           };
 
@@ -131,7 +121,7 @@ export class ApiService {
                method: 'GET',
                url: 'https://api.elevenlabs.io/v1/voices',
                headers: {
-                    "xi-api-key": this.configService.get<string>('ELEVENLABS_API_KEY'),
+                    "xi-api-key": this.api_key,
                },
           };
 
@@ -164,46 +154,96 @@ export class ApiService {
       * ```
      */
      async getSpeechToSpeechStream(file: string, voiceId: string): Promise<any> {
-          const audioBuffer = await firstValueFrom(
-               this.httpService.get(file, { responseType: 'arraybuffer' }),
+          const form = new FormData();
+
+          const formHeaders = form.getHeaders();
+          const audioResponse = await firstValueFrom(
+               this.httpService.get<ArrayBuffer>(file, { responseType: 'arraybuffer' }),
           );
-      
-          const headers = {
-               "Content-Type": 'application/json',
-               'xi-api-key': this.configService.get<string>('ELEVENLABS_API_KEY'),
-          };
-      
-          const data = {
-               model_id: 'eleven_multilingual_v2',
-               voice_settings: {
-                    stability: 0.5,
-                    similarity_boost: 0.8,
-                    style: 0.0,
-                    use_speaker_boost: true,
-               },
-          };
-      
-          const formData = new FormData();
 
-          formData.append('audio', audioBuffer.data, {
-               filename: 'input.oga',
-               contentType: 'audio/ogg',
-          });
+          const buffer = Buffer.from(audioResponse.data);
+          form.append('audio', buffer, { filename: 'audio.mp3', contentType: 'audio/mpeg' });
 
-          formData.append('data', JSON.stringify(data));
-      
-          const formHeaders = formData.getHeaders();
-          const response = await this.httpService.post(`https://api.elevenlabs.io/v1/speech-to-speech/${voiceId}/stream`, formData, {
+          const options = {
+               method: 'POST',
+               url: `https://api.elevenlabs.io/v1/speech-to-speech/${voiceId}/stream`,
                headers: {
-                    ...headers,
+                    ...formHeaders,
+                    'xi-api-key': this.api_key,
+               },
+               
+               data: form,
+          };
+
+          const response = await this.httpService.request({...options, responseType: 'arraybuffer'}).pipe(
+               map(response => response.data),
+               catchError(error => {
+                    throw new Error(`Failed to get audio from ElevenLabs: ${error.message}`);
+               }),
+          ).toPromise();
+
+          const audio = await this.cloudinaryService.uploadAudio(`data:audio/mp3;base64,${response.toString('base64')}`);
+
+          return audio;
+     };
+
+     // ---------------- Audio Isolation Stream ----------------
+
+     /**
+      * Performs audio isolation on a given video or audio file using the ElevenLabs API.
+      *
+      * @param format - The format of the input file. Must be either 'audio' or 'video'.
+      * @param file - The URL or local path of the input file.
+      * @returns A Promise that resolves to the uploaded audio URL from Cloudinary.
+      * @throws Will throw an error if the request fails or if the API key is invalid.
+      *
+      * @example
+      * ```typescript
+      * const isolatedAudioUrl = await apiService.getIsolationVideoOrAudio('audio', 'https://example.com/audio.mp3');
+      * console.log(isolatedAudioUrl);
+      * ```
+     */
+     async getIsolationVideoOrAudio(format: string, file: string) {
+          const form = new FormData();
+
+          let uploadFile: any;
+
+          if (format === 'audio') {
+               uploadFile = await this.cloudinaryService.uploadAudio(file);
+          };
+
+          if (format === 'video') {
+               uploadFile = await this.cloudinaryService.uploadVideo(file);
+          };
+
+          const formHeaders = form.getHeaders();
+          const audioResponse = await firstValueFrom(
+               this.httpService.get<ArrayBuffer>(uploadFile.url, { responseType: 'arraybuffer' }),
+          );
+          
+          const buffer = Buffer.from(audioResponse.data);
+          form.append('audio', buffer, { filename: 'audio.mp3', contentType: 'audio/mpeg' });
+
+          const options = {
+               method: 'POST', 
+               url: 'https://api.elevenlabs.io/v1/audio-isolation/stream',
+               headers: {
+                    'xi-api-key': this.api_key,
                     ...formHeaders,
                },
-               responseType: 'stream',
-          }).toPromise();
-      
-          const responseBuffer = await this.streamToBuffer(response.data);
-          const voice = await this.cloudinaryService.uploadAudio(`data:audio/mp3;base64,${responseBuffer.toString('base64')}`);
 
-          return voice;
+               data: form,
+          };
+
+          const response = await this.httpService.request({...options, responseType: 'arraybuffer'}).pipe(
+               map(response => response.data),
+               catchError(error => {
+                    throw new Error(`Failed to get audio from ElevenLabs: ${error.message}`);
+               }),
+          ).toPromise();
+
+          const audio = await this.cloudinaryService.uploadAudio(`data:audio/mp3;base64,${response.toString('base64')}`);
+
+          return audio;;
      };
 };
